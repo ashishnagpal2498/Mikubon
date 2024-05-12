@@ -1,6 +1,6 @@
 # Mikubon
 
-A containerized API server 
+A microservice based application deployed using kubernetes on GCP cloud 
 
 ## Links
 
