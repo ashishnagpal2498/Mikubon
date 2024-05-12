@@ -1,0 +1,42 @@
+steps:
+- id: build-server-1-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/node-server-repo/node-server-1:$COMMIT_SHA', '.']
+  
+- id: push-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/node-server-repo/node-server-1:$COMMIT_SHA']
+
+- id: volume-create
+  name: 'gcr.io/cloud-builders/kubectl'
+  args:
+  - 'apply'
+  - '-f'
+  - 'gke-deployment/pv_and_pvc.yaml'
+
+# Apply with envsubst
+
+- id: apply-with-envsubst
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      sed -i "s|COMMIT_SHA|$COMMIT_SHA|g" gke-deployment/gke-node-server-1.yaml
+      cat gke-deployment/gke-node-server-1.yaml
+
+
+# Deploy the Kubernetes resources to GKE
+- id: apply-resources
+  name: 'gcr.io/cloud-builders/kubectl'
+  args:
+  - 'apply' 
+  - '-f'
+  - 'gke-deployment/gke-node-server-1.yaml'
+  allowFailure: true
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=gke-cc'

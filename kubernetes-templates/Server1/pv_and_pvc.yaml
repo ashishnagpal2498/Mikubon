@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gke-node-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  gcePersistentDisk:
+    pdName: shared-data-tf #Disk name
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+     name: gke-node-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+  volumeName: gke-node-pv

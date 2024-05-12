@@ -1,0 +1,30 @@
+steps:
+
+- id: build-server-2-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/node-server-repo/node-server-2:$COMMIT_SHA', '.']
+  
+- id: push-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/node-server-repo/node-server-2:$COMMIT_SHA']
+
+- id: apply-with-envsubst
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      sed -i "s|COMMIT_SHA|$COMMIT_SHA|g" gke-deployment/gke-node-server-2.yaml
+      cat gke-deployment/gke-node-server-2.yaml
+
+- name: 'gcr.io/cloud-builders/kubectl'
+  args:
+  - 'apply'
+  - '-f'
+  - 'gke-deployment/gke-node-server-2.yaml'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=gke-cc'

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gke-node-deployment-2
+  labels:
+    app: gke-node-deployment-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gke-node-deployment-2
+  template:
+    metadata:
+      labels:
+        app: gke-node-deployment-2
+    spec:
+      containers:
+      - name: gke-node-deployment-2
+        image: us-central1-docker.pkg.dev/k8-assignment-ashish/node-server-repo/node-server-2:COMMIT_SHA
+        ports:
+        - containerPort: 3001
+        volumeMounts:
+        - name: gke-node-pv # Volume mounted inside container
+          mountPath: /ashish_PV_dir # Directory to mount
+      volumes:
+      - name: gke-node-pv # Persistent Volume Name
+        persistentVolumeClaim:
+          claimName: gke-node-pvc # Claim Name
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gke-node-service-2
+spec:
+  selector:
+    app: gke-node-deployment-2
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
